@@ -1,0 +1,222 @@
+******************************************************************************
+                  TI ARM Linker PC v5.2.2                      
+******************************************************************************
+>> Linked Wed Feb 24 14:46:20 2016
+
+OUTPUT FILE NAME:   <ICOM5217EXP1.out>
+ENTRY POINT SYMBOL: "_c_int00"  address: 000006f9
+
+
+MEMORY CONFIGURATION
+
+         name            origin    length      used     unused   attr    fill
+----------------------  --------  ---------  --------  --------  ----  --------
+  FLASH                 00000000   00040000  000008e4  0003f71c  R  X
+  SRAM                  20000000   00008000  00000214  00007dec  RW X
+
+
+SEGMENT ALLOCATION MAP
+
+run origin  load origin   length   init length attrs members
+----------  ----------- ---------- ----------- ----- -------
+00000000    00000000    000008e8   000008e8    r-x
+  00000000    00000000    0000026c   0000026c    r-- .intvecs
+  0000026c    0000026c    00000658   00000658    r-x .text
+  000008c8    000008c8    00000020   00000020    r-- .cinit
+20000000    20000000    00000214   00000000    rw-
+  20000000    20000000    00000200   00000000    rw- .stack
+  20000200    20000200    00000014   00000000    rw- .data
+
+
+SECTION ALLOCATION MAP
+
+ output                                  attributes/
+section   page    origin      length       input sections
+--------  ----  ----------  ----------   ----------------
+.intvecs   0    00000000    0000026c     
+                  00000000    0000026c     tm4c123gh6pz_startup_ccs.obj (.intvecs)
+
+.text      0    0000026c    00000658     
+                  0000026c    00000130     driverlib.lib : gpio.obj (.text:GPIOPadConfigSet)
+                  0000039c    000000f0                   : sysctl.obj (.text:SysCtlClockSet)
+                  0000048c    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.obj (.text)
+                  00000528    0000007c     main.obj (.text)
+                  000005a4    0000007a     rtsv7M4_T_le_v4SPD16_eabi.lib : memset_t2.obj (.text)
+                  0000061e    00000002     --HOLE-- [fill = 0]
+                  00000620    0000006c                                   : autoinit.obj (.text)
+                  0000068c    0000006a                                   : copy_decompress_rle.obj (.text)
+                  000006f6    00000002     --HOLE-- [fill = 0]
+                  000006f8    00000050                                   : boot.obj (.text)
+                  00000748    0000004c                                   : cpy_tbl.obj (.text)
+                  00000794    00000044                                   : exit.obj (.text)
+                  000007d8    00000034     driverlib.lib : sysctl.obj (.text:SysCtlPeripheralEnable)
+                  0000080c    0000002a                   : gpio.obj (.text:GPIODirModeSet)
+                  00000836    00000018                   : gpio.obj (.text:GPIOPinTypeGPIOOutput)
+                  0000084e    00000002     --HOLE-- [fill = 0]
+                  00000850    00000018     rtsv7M4_T_le_v4SPD16_eabi.lib : args_main.obj (.text)
+                  00000868    00000014                                   : _lock.obj (.text)
+                  0000087c    00000012     driverlib.lib : gpio.obj (.text:GPIOPinTypeGPIOInput)
+                  0000088e    0000000e     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_none.obj (.text:decompress:none)
+                  0000089c    0000000c     tm4c123gh6pz_startup_ccs.obj (.text)
+                  000008a8    00000006     driverlib.lib : gpio.obj (.text:GPIOPinRead)
+                  000008ae    00000006                   : gpio.obj (.text:GPIOPinWrite)
+                  000008b4    00000006                   : sysctl.obj (.text:SysCtlDelay)
+                  000008ba    00000006     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_rle.obj (.text:decompress:rle24)
+                  000008c0    00000004                                   : pre_init.obj (.text)
+
+.cinit     0    000008c8    00000020     
+                  000008c8    0000000f     (.cinit..data.load) [load image, compression = rle]
+                  000008d7    00000001     --HOLE-- [fill = 0]
+                  000008d8    00000008     (__TI_handler_table)
+                  000008e0    00000008     (__TI_cinit_table)
+
+.init_array 
+*          0    00000000    00000000     UNINITIALIZED
+
+.stack     0    20000000    00000200     UNINITIALIZED
+                  20000000    00000200     --HOLE--
+
+.data      0    20000200    00000014     UNINITIALIZED
+                  20000200    00000008     rtsv7M4_T_le_v4SPD16_eabi.lib : _lock.obj (.data)
+                  20000208    00000008                                   : exit.obj (.data)
+                  20000210    00000004                                   : stkdepth_vars.obj (.data)
+
+.TI.persistent 
+*          0    20000200    00000000     UNINITIALIZED
+
+
+LINKER GENERATED COPY TABLES
+
+__TI_cinit_table @ 000008e0 records: 1, size/record: 8, table size: 8
+	.data: load addr=000008c8, load size=0000000f bytes, run addr=20000200, run size=00000014 bytes, compression=rle
+
+
+LINKER GENERATED HANDLER TABLE
+
+__TI_handler_table @ 000008d8 records: 2, size/record: 4, table size: 8
+	index: 0, handler: __TI_decompress_rle24
+	index: 1, handler: __TI_decompress_none
+
+
+GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
+
+address   name                    
+-------   ----                    
+00000795  C$$EXIT                 
+0000080d  GPIODirModeSet          
+0000026d  GPIOPadConfigSet        
+000008a9  GPIOPinRead             
+0000087d  GPIOPinTypeGPIOInput    
+00000837  GPIOPinTypeGPIOOutput   
+000008af  GPIOPinWrite            
+0000089d  ResetISR                
+UNDEFED   SHT$$INIT_ARRAY$$Base   
+UNDEFED   SHT$$INIT_ARRAY$$Limit  
+0000039d  SysCtlClockSet          
+000008b5  SysCtlDelay             
+000007d9  SysCtlPeripheralEnable  
+20000200  __STACK_END             
+00000200  __STACK_SIZE            
+20000200  __STACK_TOP             
+000008e0  __TI_CINIT_Base         
+000008e8  __TI_CINIT_Limit        
+000008d8  __TI_Handler_Table_Base 
+000008e0  __TI_Handler_Table_Limit
+00000621  __TI_auto_init          
+20000208  __TI_cleanup_ptr        
+0000088f  __TI_decompress_none    
+000008bb  __TI_decompress_rle24   
+2000020c  __TI_dtors_ptr          
+00000000  __TI_static_base__      
+000005a5  __aeabi_memclr          
+000005a5  __aeabi_memclr4         
+000005a5  __aeabi_memclr8         
+0000048d  __aeabi_memcpy          
+0000048d  __aeabi_memcpy4         
+0000048d  __aeabi_memcpy8         
+000005a7  __aeabi_memset          
+000005a7  __aeabi_memset4         
+000005a7  __aeabi_memset8         
+ffffffff  __binit__               
+ffffffff  __c_args__              
+20000000  __stack                 
+00000851  _args_main              
+000006f9  _c_int00                
+20000200  _lock                   
+00000877  _nop                    
+0000086f  _register_lock          
+00000869  _register_unlock        
+000008c1  _system_pre_init        
+20000204  _unlock                 
+00000799  abort                   
+ffffffff  binit                   
+00000749  copy_in                 
+000007a1  exit                    
+00000000  g_pfnVectors            
+00000529  main                    
+20000210  main_func_sp            
+0000048d  memcpy                  
+000005ad  memset                  
+
+
+GLOBAL SYMBOLS: SORTED BY Symbol Address 
+
+address   name                    
+-------   ----                    
+00000000  __TI_static_base__      
+00000000  g_pfnVectors            
+00000200  __STACK_SIZE            
+0000026d  GPIOPadConfigSet        
+0000039d  SysCtlClockSet          
+0000048d  __aeabi_memcpy          
+0000048d  __aeabi_memcpy4         
+0000048d  __aeabi_memcpy8         
+0000048d  memcpy                  
+00000529  main                    
+000005a5  __aeabi_memclr          
+000005a5  __aeabi_memclr4         
+000005a5  __aeabi_memclr8         
+000005a7  __aeabi_memset          
+000005a7  __aeabi_memset4         
+000005a7  __aeabi_memset8         
+000005ad  memset                  
+00000621  __TI_auto_init          
+000006f9  _c_int00                
+00000749  copy_in                 
+00000795  C$$EXIT                 
+00000799  abort                   
+000007a1  exit                    
+000007d9  SysCtlPeripheralEnable  
+0000080d  GPIODirModeSet          
+00000837  GPIOPinTypeGPIOOutput   
+00000851  _args_main              
+00000869  _register_unlock        
+0000086f  _register_lock          
+00000877  _nop                    
+0000087d  GPIOPinTypeGPIOInput    
+0000088f  __TI_decompress_none    
+0000089d  ResetISR                
+000008a9  GPIOPinRead             
+000008af  GPIOPinWrite            
+000008b5  SysCtlDelay             
+000008bb  __TI_decompress_rle24   
+000008c1  _system_pre_init        
+000008d8  __TI_Handler_Table_Base 
+000008e0  __TI_CINIT_Base         
+000008e0  __TI_Handler_Table_Limit
+000008e8  __TI_CINIT_Limit        
+20000000  __stack                 
+20000200  __STACK_END             
+20000200  __STACK_TOP             
+20000200  _lock                   
+20000204  _unlock                 
+20000208  __TI_cleanup_ptr        
+2000020c  __TI_dtors_ptr          
+20000210  main_func_sp            
+ffffffff  __binit__               
+ffffffff  __c_args__              
+ffffffff  binit                   
+UNDEFED   SHT$$INIT_ARRAY$$Base   
+UNDEFED   SHT$$INIT_ARRAY$$Limit  
+
+[55 symbols]
