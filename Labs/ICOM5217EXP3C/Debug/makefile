@@ -12,7 +12,7 @@ ORDERED_OBJS += \
 "../driverlib.lib" \
 "../tm4c123gh6pm.cmd" \
 $(GEN_CMDS__FLAG) \
--l"libc.a" \
+-l"C:\ti\TivaWare_C_Series-2.1.1.71\driverlib\ccs\Debug\driverlib.lib" \
 
 -include ../makefile.init
 

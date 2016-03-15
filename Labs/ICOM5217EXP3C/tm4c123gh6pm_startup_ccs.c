@@ -43,6 +43,7 @@ static void IntDefaultHandler(void);
 extern void _c_int00(void);
 extern void portAISR(void);
 extern void portCISR(void);
+extern void portDISR(void);
 
 //*****************************************************************************
 //
@@ -88,7 +89,6 @@ void (* const g_pfnVectors[])(void) =
 	portAISR,                      // GPIO Port A
     IntDefaultHandler,                      // GPIO Port B
 	portAISR,                      // GPIO Port C
-    IntDefaultHandler,                      // GPIO Port D
     IntDefaultHandler,                      // GPIO Port E
     IntDefaultHandler,                      // UART0 Rx and Tx
     IntDefaultHandler,                      // UART1 Rx and Tx

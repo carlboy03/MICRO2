@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 /******************************************************************
- * By: Alan López García and Carlos Fuentes Rosa 3/2/2016
+ * By: Alan López García and Carlos Fuentes Rosa 3/14/2016
  * References:
  * TI, Getting Started with the Tica TM4C132G LaunchPad Workhsop
  * https://e2e.ti.com/support/microcontrollers/tiva_arm/f/908/t/332605
@@ -47,6 +47,7 @@ volatile char buffer [16];
 volatile int  sizeOfInteger;
 void portAISR(void);
 void portCISR(void);
+void portDISR(void);
 
 
 
@@ -60,6 +61,7 @@ int main(void){
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
 
 
 
@@ -67,6 +69,7 @@ int main(void){
 	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, RS|E|RW);
 	GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, bit4|bit5|bit6|bit7);
 	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, buttonUpPin|buttonDownPin);
+	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, buttonUpPin|buttonDownPin);//Sensors are in portD2-3
 	GPIOPinTypeGPIOInput(GPIO_PORTC_BASE, buttonDebouncePin);
 
 
@@ -78,12 +81,21 @@ int main(void){
 	GPIOIntTypeSet(GPIO_PORTA_BASE, buttonUpPin|buttonDownPin,GPIO_FALLING_EDGE);
 	GPIOIntEnable(GPIO_PORTA_BASE, buttonUpPin|buttonDownPin);
 
+
 	// Interrupt setup 2
 	GPIOIntDisable(GPIO_PORTC_BASE, buttonDebouncePin);
 	GPIOIntClear(GPIO_PORTC_BASE, buttonDebouncePin);
 	GPIOIntRegister(GPIO_PORTC_BASE, portCISR);
 	GPIOIntTypeSet(GPIO_PORTC_BASE, buttonDebouncePin,GPIO_FALLING_EDGE);
 	GPIOIntEnable(GPIO_PORTC_BASE, buttonDebouncePin);
+
+
+	// Interrupt setup 3 PD2/PD3
+	GPIOIntDisable(GPIO_PORTD_BASE, buttonUpPin|buttonDownPin);
+	GPIOIntClear(GPIO_PORTD_BASE, buttonUpPin|buttonDownPin);
+	GPIOIntRegister(GPIO_PORTD_BASE, portDISR);
+	GPIOIntTypeSet(GPIO_PORTD_BASE, buttonUpPin|buttonDownPin,GPIO_FALLING_EDGE);
+	GPIOIntEnable(GPIO_PORTD_BASE, buttonUpPin|buttonDownPin);
 
 	FourBitInitialize();
 
@@ -213,5 +225,10 @@ void updateSizeOfInteger(){
  if (globalCounter <= 9 && globalCounter >-1) sizeOfInteger = 1;
  if (globalCounter <= 99 && globalCounter >9) sizeOfInteger = 2;
  if (globalCounter <= 999 && globalCounter >99) sizeOfInteger = 3;
+
+}
+
+
+void portDISR(void){
 
 }
