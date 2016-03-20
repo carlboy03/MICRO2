@@ -34,8 +34,9 @@ uint8_t bit5High = 32;
 uint8_t bit6High = 64;
 uint8_t bit7High = 128;
 
-
-
+uint8_t timerCounter;
+uint8_t speed;
+int stateCount;
 
 
 uint8_t buttonUpPin = GPIO_PIN_3;
@@ -50,9 +51,10 @@ volatile char buffer [16];
 volatile int  sizeOfInteger;
 void portAISR(void);
 void portCISR(void);
-void portDISR(void);
 void lineSwitcher();
+void Timer0IntHandler(void);
 
+volatile int direction;
 
 volatile uint8_t currentState;
 volatile int globalCounter;
@@ -77,30 +79,33 @@ static char hello[11] = "hello world";
 
 volatile int lineLengthArray[16] = {2,11,2,3,11,4,2,2,5,10,12,2,2,10,7,8};
 
-
+char speedNumber[2];
 int main(void){
-    SysCtlClockSet(SYSCTL_SYSDIV_4|SYSCTL_USE_PLL|SYSCTL_XTAL_16MHZ|SYSCTL_OSC_MAIN);
+	SysCtlClockSet(SYSCTL_SYSDIV_4|SYSCTL_USE_PLL|SYSCTL_XTAL_16MHZ|SYSCTL_OSC_MAIN);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
 	//SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
+	direction =-1;
+	timerCounter= 0;
+	speed=0;
+	stateCount=0;
 
 
 
 
 	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, RS|E|RW);
 	GPIOPinTypeGPIOOutput(GPIO_PORTA_BASE, bit4|bit5|bit6|bit7);
-	GPIOPinTypeGPIOInput(GPIO_PORTD_BASE, photosensorTop | photosensorBottom);
+	GPIOPinTypeGPIOInput(GPIO_PORTA_BASE, photosensorTop | photosensorBottom);
 	//GPIOPinTypeGPIOInput(GPIO_PORTC_BASE, buttonDebouncePin);
 
 
 
 	// Interrupt setup 1
-	GPIOIntDisable(GPIO_PORTD_BASE, photosensorTop | photosensorBottom);
-	GPIOIntClear(GPIO_PORTD_BASE, photosensorTop | photosensorBottom);
-	GPIOIntRegister(GPIO_PORTD_BASE, portAISR);
-	GPIOIntTypeSet(GPIO_PORTD_BASE, photosensorTop | photosensorBottom,GPIO_BOTH_EDGES); //both edges pq detecto 1 y 0 dependiendo el color
-	GPIOIntEnable(GPIO_PORTD_BASE,photosensorTop | photosensorBottom);
+	GPIOIntDisable(GPIO_PORTA_BASE, photosensorTop | photosensorBottom);
+	GPIOIntClear(GPIO_PORTA_BASE, photosensorTop | photosensorBottom);
+	GPIOIntRegister(GPIO_PORTA_BASE, portAISR);
+	GPIOIntTypeSet(GPIO_PORTA_BASE, photosensorTop | photosensorBottom,GPIO_BOTH_EDGES); //both edges pq detecto 1 y 0 dependiendo el color
+	GPIOIntEnable(GPIO_PORTA_BASE,photosensorTop | photosensorBottom);
 
 
 	FourBitInitialize();
@@ -109,15 +114,47 @@ int main(void){
 	//updateSizeOfInteger();
 	//displayLine(buffer,sizeOfInteger); //cast char
 
-	currentState= (GPIOIntStatus(GPIO_PORTD_BASE, false)& (photosensorTop | photosensorBottom));
+	currentState= (GPIOIntStatus(GPIO_PORTA_BASE, false)& (photosensorTop | photosensorBottom));
 	currentState = currentState<<2;
 	currentState = 0x0F & currentState;
 	globalCounter=-1;
 
+	SysCtlClockSet(SYSCTL_SYSDIV_4|SYSCTL_USE_PLL|SYSCTL_XTAL_16MHZ|SYSCTL_OSC_MAIN);  //Sets 40MHz clock
 
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0); //Using 32bit timer0A+timer0B
+	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC); //set clock in periodic mode
+
+	//frequency = 1;
+	//ui32Period = (SysCtlClockGet() / frequency) / 2; //SysCtlClockGet()/desiredfrequency/dutyCycle
+	TimerLoadSet(TIMER0_BASE, TIMER_A, (SysCtlClockGet()-1)/2); // the load to the specific timer  -1 is used because the timer starts @ 0
+
+	IntEnable(INT_TIMER0A);
+	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	IntMasterEnable();
+
+	//TimerEnable(TIMER0_BASE, TIMER_A);
+
+	stateCount=200;
+	direction=1;
+	calculateSpeed();
+	dataPrinter();
 	while(1); //busyWait
 
 
+
+
+}
+
+void Timer0IntHandler(void){
+
+	// Clear the timer interrupt
+	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+	if (timerCounter>3 || timerCounter<0){
+		timerCounter=0;
+		calculateSpeed();
+		dataPrinter();
+	}
+	timerCounter++;
 
 
 }
@@ -195,7 +232,8 @@ void globalCounterPlus(){
 	else{
 		globalCounter=0;
 	}
-	lineSwitcher();
+	direction=0;//plus is CCW
+	//lineSwitcher();
 }
 
 void globalCounterLess(){
@@ -205,7 +243,8 @@ void globalCounterLess(){
 	else{
 		globalCounter=15;
 	}
-	lineSwitcher();
+	direction=1;//less is CW
+	//lineSwitcher();
 }
 
 void portAISR(void){
@@ -218,27 +257,8 @@ void portAISR(void){
 	//currentState =  currentState << 2 ;
 	currentState = currentState<<2|tempVariable>>2;
 	currentState = 0x0F & currentState;
-	tableLookup();
-	//currentState = GPIOIntStatus(GPIO_PORTA_BASE, false) & photosensorTop | GPIOIntStatus(GPIO_PORTA_BASE, false) & photosensorBottom;
-	//printf("tempVariableTop: %d \n", tempVariableTop);
-	//printf("tempVariableBottom: %d \n", tempVariableBottom);
-	GPIOIntClear(GPIO_PORTA_BASE, photosensorTop | photosensorBottom);
-	GPIOIntEnable(GPIO_PORTA_BASE, photosensorTop | photosensorBottom);
-
-
-}
-
-void portDISR(void){
-	GPIOIntDisable(GPIO_PORTA_BASE, photosensorTop | photosensorBottom);
-	uint8_t tempVariable= (GPIOPinRead(GPIO_PORTA_BASE,(photosensorTop | photosensorBottom)));
-	//uint8_t tempVariableBottom= (GPIOIntStatus(GPIO_PORTA_BASE, false)& (photosensorBottom));
-	//uint8_t tempVariableTop= (GPIOIntStatus(GPIO_PORTA_BASE, false)& (photosensorTop));
-	//tempVariable= (photosensorTop | photosensorBottom) & tempVariable;
-	//uint32_t tempVariable2= GPIOIntStatus(GPIO_PORTA_BASE, false);
-	//currentState =  currentState << 2 ;
-	currentState = currentState<<2|tempVariable>>2;
-	currentState = 0x0F & currentState;
-	tableLookup();
+	stateCount++;
+	//tableLookup();
 	//currentState = GPIOIntStatus(GPIO_PORTA_BASE, false) & photosensorTop | GPIOIntStatus(GPIO_PORTA_BASE, false) & photosensorBottom;
 	//printf("tempVariableTop: %d \n", tempVariableTop);
 	//printf("tempVariableBottom: %d \n", tempVariableBottom);
@@ -251,6 +271,55 @@ void portDISR(void){
 void portCISR(void){
 
 
+}
+
+void dataPrinter(){
+	//print Speed word space equal sign
+	send4BitCommand(1);
+	sendCharacter('S');
+	sendCharacter('p');
+	sendCharacter('e');
+	sendCharacter('e');
+	sendCharacter('d');
+	sendCharacter(':');
+	sendCharacter(' ');
+
+	//print amount of speed
+	sendCharacter(speedNumber[0]);
+	sendCharacter(speedNumber[1]);
+	sendCharacter(speedNumber[2]);
+	sendCharacter(' ');
+	//print space RPM
+	sendCharacter('R');
+	sendCharacter('P');
+	sendCharacter('M');
+
+	// second line command
+	send4BitCommand(0xC0);
+	sendCharacter(' ');
+	sendCharacter(' ');
+	sendCharacter(' ');
+	sendCharacter(' ');
+
+	// print direction
+	if (direction==1){
+		sendCharacter('C');
+		sendCharacter('C');
+		sendCharacter('W');
+	}
+	else if (direction ==0){
+		sendCharacter('C');
+		sendCharacter('W');
+	}
+
+}
+
+void calculateSpeed(){
+	speed=stateCount*5/4;
+	speedNumber[0]=' ';
+	speedNumber[1]=' ';
+	speedNumber[2]=' ';
+	sprintf(speedNumber,"%d", speed );
 }
 
 void lineSwitcher(){
