@@ -108,8 +108,7 @@ int main(void) {
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0); //Using 32bit timer0A+timer0B
 	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC_UP); //set clock in periodic mode
 
-	//frequency = 0xFFFF;
-	//ui32Period = (SysCtlClockGet() / frequency) / 20; //SysCtlClockGet()/desiredfrequency/dutyCycle
+
 	TimerLoadSet(TIMER0_BASE, TIMER_A,0xFFFF); // the load to the specific timer  -1 is used because the timer starts @ 0
 
 	//IntEnable(INT_TIMER0A);
@@ -118,22 +117,24 @@ int main(void) {
 
 	TimerEnable(TIMER0_BASE, TIMER_A);
 	FourBitInitialize();
-	restartMessage();
-	printGuessValue();
+	//	restartMessage();
+	//	printGuessValue();
 	while(1){
 		//GPIOIntDisable(GPIO_PORTA_BASE, buttonUpPin|buttonDownPin);
 		//signal=GPIOPinRead(GPIO_PORTA_BASE, buttonUpPin);
-		if(pressUp==1){
+		if(pressUp==1 ){
 			GPIOIntDisable(GPIO_PORTA_BASE, buttonUpPin);
 			pressUp=0;
+			pressDown=0;
 			guessValueIncrease();
 			restartMessage();
 			printGuessValue();
 			GPIOIntEnable(GPIO_PORTA_BASE, buttonUpPin);
 
 		}
-		else if(pressDown==1 ){
+		else if(pressDown==1  ){
 			GPIOIntDisable(GPIO_PORTD_BASE, buttonS4);
+			pressUp=0;
 			pressDown=0;
 			guessValueDecrease();
 			restartMessage();
@@ -141,15 +142,17 @@ int main(void) {
 			GPIOIntEnable(GPIO_PORTD_BASE, buttonS4);
 
 		}
-		if(depress==1 && depress1==1 &debounceCounter){
+		if(depress==1 && depress1==1 ){
 
 			depress=0;
 			depress1=0;
+			pressUp=0;
+			pressDown=0;
 			gameStatus1();
 
 		}
 
-		if(debounceCounter<3){
+		if(debounceCounter<10){
 			debounceCounter++;
 		}
 		else {
@@ -162,26 +165,33 @@ int main(void) {
 
 }
 void portAISR(void){
+	IntMasterDisable();
+
 	GPIOIntDisable(GPIO_PORTA_BASE, buttonUpPin|buttonDownPin);
-	if(GPIOPinRead(GPIO_PORTA_BASE, buttonUpPin)&(buttonUpPin)){
+	 if(GPIOPinRead(GPIO_PORTA_BASE, buttonUpPin)&(buttonUpPin)){
 		depress=1;
 		pressUp=1;
 	}
+
 	GPIOIntClear(GPIO_PORTA_BASE, buttonUpPin);
 	millisDelay(5);
 	GPIOIntEnable(GPIO_PORTA_BASE, buttonUpPin| buttonDownPin);
+	IntMasterEnable();
 
 }
 
 void portCISR(void){
+	IntMasterDisable();
 	GPIOIntDisable(GPIO_PORTC_BASE,buttonS4);
 	if(GPIOPinRead(GPIO_PORTC_BASE, buttonS4)&(buttonS4)){
 		depress1=1;
 		pressDown=1;
 	}
+
 	GPIOIntClear(GPIO_PORTC_BASE, buttonS4);
 	millisDelay(5);
 	GPIOIntEnable(GPIO_PORTC_BASE, buttonS4);
+	IntMasterEnable();
 
 }
 
@@ -347,6 +357,7 @@ void gameStatus1(){
 
 	timerValue= timerValue& 0x00FF;
 	timerValue=timerValue%10;
+	//timerValue=5;
 	if (timerValue==guessValue){
 		if(gameStatus ==3){
 			gameOver=1;
@@ -370,17 +381,17 @@ void gameStatus1(){
 		}
 		restartGame=0;
 	}
-	if( gameOver==1&& restartGame== 0){
+	if( (gameOver==1 && restartGame== 0) ||gameStatus==3){
 		send4BitCommand(1);
 		timerValuePrint();
-		millisDelay(5);
+		millisDelay(50);
 		send4BitCommand(1);
-		winMessage();
-		millisDelay(5);
-		send4BitCommand(1);
+		//		winMessage();
+		//		millisDelay(50);
+		//		send4BitCommand(1);
 		gameOverMessage();
 		gameStatus=0;
-		millisDelay(5);
+		millisDelay(50);
 		restartMessage();
 		printGuessValue();
 
@@ -389,7 +400,10 @@ void gameStatus1(){
 	else if(gameOver==0 &&restartGame==1) {
 		send4BitCommand(1);
 		timerValuePrint();
-		millisDelay(5);
+		millisDelay(50);
+		send4BitCommand(1);
+		winMessage();
+		millisDelay(50);
 		send4BitCommand(1);
 		restartMessage();
 		printGuessValue();
@@ -400,7 +414,11 @@ void gameStatus1(){
 	else{
 		send4BitCommand(1);
 		timerValuePrint();
-		millisDelay(5);
+		millisDelay(50);
+		millisDelay(50);
+		send4BitCommand(1);
+		restartMessage();
+		printGuessValue();
 
 	}
 
