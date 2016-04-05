@@ -34,7 +34,7 @@ uint8_t bit5High = 32;
 uint8_t bit6High = 64;
 uint8_t bit7High = 128;
 
-uint8_t timerCounter;
+int timerCounter;
 uint8_t speed;
 int stateCount;
 
@@ -50,7 +50,7 @@ uint8_t buttonDebouncePin = GPIO_PIN_6;
 volatile char buffer [16];
 volatile int  sizeOfInteger;
 void portAISR(void);
-void portCISR(void);
+//void portCISR(void);
 void lineSwitcher();
 void Timer0IntHandler(void);
 
@@ -79,6 +79,9 @@ static char hello[11] = "hello world";
 
 volatile int lineLengthArray[16] = {2,11,2,3,11,4,2,2,5,10,12,2,2,10,7,8};
 
+
+uint8_t ui32Period;
+int frequency;
 char speedNumber[2];
 int main(void){
 	SysCtlClockSet(SYSCTL_SYSDIV_4|SYSCTL_USE_PLL|SYSCTL_XTAL_16MHZ|SYSCTL_OSC_MAIN);
@@ -89,6 +92,7 @@ int main(void){
 	timerCounter= 0;
 	speed=0;
 	stateCount=0;
+	frequency=0;
 
 
 
@@ -122,22 +126,20 @@ int main(void){
 	SysCtlClockSet(SYSCTL_SYSDIV_4|SYSCTL_USE_PLL|SYSCTL_XTAL_16MHZ|SYSCTL_OSC_MAIN);  //Sets 40MHz clock
 
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0); //Using 32bit timer0A+timer0B
-	TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC); //set clock in periodic mode
+		TimerConfigure(TIMER0_BASE, TIMER_CFG_PERIODIC); //set clock in periodic mode
 
-	//frequency = 1;
-	//ui32Period = (SysCtlClockGet() / frequency) / 2; //SysCtlClockGet()/desiredfrequency/dutyCycle
-	TimerLoadSet(TIMER0_BASE, TIMER_A, (SysCtlClockGet()-1)/2); // the load to the specific timer  -1 is used because the timer starts @ 0
+		frequency = 1024;
+		ui32Period = (SysCtlClockGet() / frequency) / 2; //SysCtlClockGet()/desiredfrequency/dutyCycle
+		TimerLoadSet(TIMER0_BASE, TIMER_A, ui32Period -1); // the load to the specific timer  -1 is used because the timer starts @ 0
 
-	IntEnable(INT_TIMER0A);
-	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-	IntMasterEnable();
+		IntEnable(INT_TIMER0A);
+		TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
+		IntMasterEnable();
 
-	//TimerEnable(TIMER0_BASE, TIMER_A);
+		TimerEnable(TIMER0_BASE, TIMER_A);
 
-	stateCount=200;
-	direction=1;
-	calculateSpeed();
-	dataPrinter();
+
+
 	while(1); //busyWait
 
 
@@ -148,8 +150,9 @@ int main(void){
 void Timer0IntHandler(void){
 
 	// Clear the timer interrupt
-	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-	if (timerCounter>3 || timerCounter<0){
+	TimerIntClear(TIMER2_BASE, TIMER_TIMA_TIMEOUT);
+
+	if (timerCounter>1024 || timerCounter<0){
 		timerCounter=0;
 		calculateSpeed();
 		dataPrinter();
@@ -248,6 +251,8 @@ void globalCounterLess(){
 }
 
 void portAISR(void){
+	IntMasterDisable();
+
 	GPIOIntDisable(GPIO_PORTA_BASE, photosensorTop | photosensorBottom);
 	uint8_t tempVariable= (GPIOPinRead(GPIO_PORTA_BASE,(photosensorTop | photosensorBottom)));
 	//uint8_t tempVariableBottom= (GPIOIntStatus(GPIO_PORTA_BASE, false)& (photosensorBottom));
@@ -264,14 +269,12 @@ void portAISR(void){
 	//printf("tempVariableBottom: %d \n", tempVariableBottom);
 	GPIOIntClear(GPIO_PORTA_BASE, photosensorTop | photosensorBottom);
 	GPIOIntEnable(GPIO_PORTA_BASE, photosensorTop | photosensorBottom);
+	IntMasterEnable();
 
 
 }
 
-void portCISR(void){
 
-
-}
 
 void dataPrinter(){
 	//print Speed word space equal sign

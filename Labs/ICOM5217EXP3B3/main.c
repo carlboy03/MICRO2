@@ -111,17 +111,31 @@ int main(void) {
 
 	TimerLoadSet(TIMER0_BASE, TIMER_A,0xFFFF); // the load to the specific timer  -1 is used because the timer starts @ 0
 
-	//IntEnable(INT_TIMER0A);
+
 	TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 	IntMasterEnable();
 
 	TimerEnable(TIMER0_BASE, TIMER_A);
 	FourBitInitialize();
-	//	restartMessage();
-	//	printGuessValue();
 	while(1){
-		//GPIOIntDisable(GPIO_PORTA_BASE, buttonUpPin|buttonDownPin);
-		//signal=GPIOPinRead(GPIO_PORTA_BASE, buttonUpPin);
+		if(depress==1 && depress1==1 ){
+
+					depress=0;
+					depress1=0;
+					pressUp=0;
+					pressDown=0;
+					gameStatus1();
+
+				}
+
+				if(debounceCounter<10){
+					debounceCounter++;
+				}
+				else {
+					debounceCounter=0;
+					depress=0;
+					depress1=0;
+				}
 		if(pressUp==1 ){
 			GPIOIntDisable(GPIO_PORTA_BASE, buttonUpPin);
 			pressUp=0;
@@ -142,24 +156,7 @@ int main(void) {
 			GPIOIntEnable(GPIO_PORTD_BASE, buttonS4);
 
 		}
-		if(depress==1 && depress1==1 ){
 
-			depress=0;
-			depress1=0;
-			pressUp=0;
-			pressDown=0;
-			gameStatus1();
-
-		}
-
-		if(debounceCounter<10){
-			debounceCounter++;
-		}
-		else {
-			debounceCounter=0;
-			depress=0;
-			depress1=0;
-		}
 		//GPIOIntEnable(GPIO_PORTA_BASE, buttonUpPin|buttonDownPin);
 	}
 
@@ -194,30 +191,6 @@ void portCISR(void){
 	IntMasterEnable();
 
 }
-
-void frequencyPlus(){
-	frequency = frequency+10;
-	ui32Period = (SysCtlClockGet() / frequency) / 2; //SysCtlClockGet()/desiredfrequency/dutyCycle
-	TimerLoadSet(TIMER0_BASE, TIMER_A, ui32Period -1); // the load to the specific timer  -1 is used because the timer starts @ 0
-}
-
-void frequencyLess(){
-	frequency = frequency-10;
-	ui32Period = (SysCtlClockGet() / frequency) / 2; //SysCtlClockGet()/desiredfrequency/dutyCycle
-	TimerLoadSet(TIMER0_BASE, TIMER_A, ui32Period -1); // the load to the specific timer  -1 is used because the timer starts @ 0
-}
-
-void Timer0IntHandler(void){
-
-	// Clear the timer interrupt
-
-	TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
-	buzzerValue = ~(buzzerValue);
-
-	GPIOPinWrite(GPIO_PORTB_BASE, buzzerPin, buzzerValue);
-}
-
-
 
 void send6BitCommand(uint8_t command){
 	GPIOPinWrite(GPIO_PORTF_BASE, E, EHigh);
