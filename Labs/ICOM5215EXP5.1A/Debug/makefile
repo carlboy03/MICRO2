@@ -4,7 +4,10 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.2
+CG_TOOL_ROOT := C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.5
+
+GEN_OPTS__FLAG := 
+GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
 "./main.obj" \
@@ -117,32 +120,32 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-ICOM5215EXP5.1A.out \
+ICOM5217EXP5.1A.out \
 
 EXE_OUTPUTS__QUOTED += \
-"ICOM5215EXP5.1A.out" \
+"ICOM5217EXP5.1A.out" \
 
 BIN_OUTPUTS += \
-ICOM5215EXP5.1A.hex \
+ICOM5217EXP5.1A.hex \
 
 BIN_OUTPUTS__QUOTED += \
-"ICOM5215EXP5.1A.hex" \
+"ICOM5217EXP5.1A.hex" \
 
 
 # All Target
-all: ICOM5215EXP5.1A.out
+all: ICOM5217EXP5.1A.out
 
 # Tool invocations
-ICOM5215EXP5.1A.out: $(OBJS) $(CMD_SRCS) $(LIB_SRCS) $(GEN_CMDS)
+ICOM5217EXP5.1A.out: $(OBJS) $(CMD_SRCS) $(LIB_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: ARM Linker'
-	"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.2/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --gcc --define=DEBUG --define=PART_TM4C123GH6PM --define=TARGET_IS_BLIZZARD_RB1 --define=ccs="ccs" --display_error_number --diag_warning=225 --diag_wrap=off -z -m"ICOM5215EXP5.1A.map" --heap_size=0 --stack_size=100 -i"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.2/lib" -i"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.2/include" --reread_libs --warn_sections --display_error_number --diag_wrap=off --xml_link_info="ICOM5215EXP5.1A_linkInfo.xml" --rom_model -o "ICOM5215EXP5.1A.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.5/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 --abi=eabi -me -g --gcc --define=DEBUG --define=PART_TM4C123GH6PM --define=TARGET_IS_BLIZZARD_RB1 --define=ccs="ccs" --diag_wrap=off --diag_warning=225 --display_error_number -z -m"ICOM5217EXP5.1A.map" --heap_size=0 --stack_size=100 -i"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.5/lib" -i"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.5/include" --reread_libs --display_error_number --diag_wrap=off --warn_sections --xml_link_info="ICOM5217EXP5.1A_linkInfo.xml" --rom_model -o "ICOM5217EXP5.1A.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-ICOM5215EXP5.1A.hex: $(EXE_OUTPUTS)
+ICOM5217EXP5.1A.hex: $(EXE_OUTPUTS)
 	@echo 'Invoking: ARM Hex Utility'
-	"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.2/bin/armhex"  -o "ICOM5215EXP5.1A.hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/ccsv6/tools/compiler/ti-cgt-arm_5.2.5/bin/armhex"  -o "ICOM5217EXP5.1A.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $@'
 	@echo ' '
 
